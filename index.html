@@ -1,0 +1,1833 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EVA Pachislot Machine (新世紀福音戰士機台) - 勝利への願い</title>
+  <meta name="description" content="新世紀福音戰士實體機台風格拉霸機 - 頂部液晶演出 (UP.mp4)、中央轉輪窗、頭像停止鍵與暴走模式">
+
+  <style>
+    /* ==========================================================
+       1. 全局變數與基礎重設
+       ========================================================== */
+    :root {
+      --eva-purple: #7A00FF;
+      --eva-purple-dark: #3a0077;
+      --eva-green: #52FF00;
+      --eva-green-glow: rgba(82, 255, 0, 0.6);
+      --eva-orange: #FF7700;
+      --eva-red: #FF003B;
+      --eva-gold: #FFD700;
+      --eva-chrome: #c8d1dc;
+      --font-tech: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Arial", "Noto Sans TC", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      background-color: #050308;
+      background-image: 
+        radial-gradient(circle at 50% 25%, rgba(122, 0, 255, 0.22) 0%, transparent 70%),
+        linear-gradient(rgba(82, 255, 0, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(82, 255, 0, 0.03) 1px, transparent 1px);
+      background-size: 100% 100%, 30px 30px, 30px 30px;
+      color: #FFFFFF;
+      font-family: var(--font-tech);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 8px 6px 20px;
+      overflow-x: hidden;
+    }
+
+    /* NERV 警戒條紋 */
+    .hazard-stripe {
+      background: repeating-linear-gradient(
+        -45deg,
+        #0e0508,
+        #0e0508 14px,
+        #e60026 14px,
+        #e60026 28px
+      );
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+    }
+
+    .top-hazard-bar {
+      width: 100%;
+      max-width: 580px;
+      height: 7px;
+      margin-bottom: 6px;
+    }
+
+    /* ==========================================================
+       2. 頂部系統狀態欄 (HUD Bar)
+       ========================================================== */
+    .system-hud-bar {
+      width: 100%;
+      max-width: 550px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(14, 8, 24, 0.88);
+      border: 1px solid var(--eva-purple);
+      border-left: 5px solid var(--eva-green);
+      padding: 6px 12px;
+      margin-bottom: 8px;
+      font-size: 0.72rem;
+      box-shadow: 0 0 15px rgba(122, 0, 255, 0.3);
+    }
+
+    .hud-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+    }
+
+    .hud-nerv-tag {
+      background: var(--eva-red);
+      color: #FFF;
+      padding: 2px 6px;
+      font-size: 0.65rem;
+      letter-spacing: 1px;
+      clip-path: polygon(0 0, 100% 0, 85% 100%, 0% 100%);
+    }
+
+    .hud-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .hud-magi {
+      color: var(--eva-green);
+      border: 1px solid var(--eva-green);
+      padding: 2px 6px;
+      font-weight: 700;
+      background: rgba(82, 255, 0, 0.08);
+    }
+
+    .sound-btn {
+      background: transparent;
+      border: 1px solid var(--eva-purple);
+      color: #c4b5fd;
+      padding: 3px 8px;
+      font-size: 0.7rem;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+
+    .sound-btn:hover {
+      background: var(--eva-purple);
+      color: #FFF;
+    }
+
+    /* ==========================================================
+       3. 核心實體機台外殼 (PACHISLOT CABINET)
+       ========================================================== */
+    .cabinet-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 530px;
+      background: linear-gradient(180deg, #1b0a30 0%, #0d041a 40%, #150626 70%, #0b0214 100%);
+      border: 4px solid #4a1575;
+      border-radius: 14px 14px 10px 10px;
+      box-shadow: 
+        0 0 35px rgba(122, 0, 255, 0.5), 
+        0 15px 40px rgba(0, 0, 0, 0.9),
+        inset 0 0 20px rgba(0, 0, 0, 0.85);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    /* 左右兩側 EVA 裝甲斜翼光條 */
+    .cabinet-wrapper::before,
+    .cabinet-wrapper::after {
+      content: "";
+      position: absolute;
+      top: 40px;
+      width: 10px;
+      height: 420px;
+      z-index: 2;
+    }
+    .cabinet-wrapper::before {
+      left: 0;
+      background: linear-gradient(90deg, #52ff00 0%, rgba(82,255,0,0) 100%);
+      box-shadow: 0 0 12px rgba(82, 255, 0, 0.5);
+    }
+    .cabinet-wrapper::after {
+      right: 0;
+      background: linear-gradient(-90deg, #52ff00 0%, rgba(82,255,0,0) 100%);
+      box-shadow: 0 0 12px rgba(82, 255, 0, 0.5);
+    }
+
+    /* ----------------------------------------------------------
+       3.1 機台頂部：液晶演出螢幕 (UP.mp4)
+       ---------------------------------------------------------- */
+    .cabinet-top-screen {
+      width: 100%;
+      background: linear-gradient(180deg, #230c3d 0%, #0c0217 100%);
+      padding: 10px 12px 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 3;
+      border-bottom: 3px solid #5a1c8f;
+    }
+
+    .top-screen-bezel {
+      width: 100%;
+      max-width: 480px;
+      height: 230px;
+      background: #000000;
+      border: 3px solid #52ff00;
+      border-radius: 8px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 0 20px rgba(82, 255, 0, 0.35), inset 0 0 25px rgba(0,0,0,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #top-lcd-video {
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      display: block;
+      background: #000000;
+      margin: 0 auto;
+      transform-origin: center center;
+      transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .top-screen-scanline {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%);
+      background-size: 100% 4px;
+      opacity: 0.5;
+      z-index: 2;
+    }
+
+
+
+    /* ----------------------------------------------------------
+       3.2 中央核心轉動區域 (REELS WINDOW)
+       ---------------------------------------------------------- */
+    .reels-stage-housing {
+      width: 100%;
+      position: relative;
+      background: #000000;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 3;
+      border-top: 2px solid #3d1466;
+      border-bottom: 3px solid #1a082b;
+      box-shadow: inset 0 0 35px rgba(0, 0, 0, 0.98);
+    }
+
+    .reels-bezel-frame {
+      width: 100%;
+      max-width: 480px;
+      background: linear-gradient(180deg, #2a2038 0%, #12091c 50%, #201330 100%);
+      border: 4px solid #5a2688;
+      border-radius: 10px;
+      padding: 8px;
+      position: relative;
+      box-shadow: 
+        0 0 25px rgba(122, 0, 255, 0.4),
+        inset 0 10px 20px rgba(0, 0, 0, 0.9),
+        inset 0 -10px 20px rgba(0, 0, 0, 0.9);
+    }
+
+    .reels-bezel-frame::before {
+      content: "EVANGELION // 5 PAYLINES";
+      position: absolute;
+      top: -10px;
+      left: 16px;
+      background: #7A00FF;
+      color: #52FF00;
+      font-size: 0.58rem;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      padding: 2px 8px;
+      border: 1px solid #52FF00;
+    }
+
+    /* 3 輪視窗本體 (3x3 網格) */
+    .reels-viewport {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      background: #08040f;
+      border: 2px solid #4a1575;
+      border-radius: 6px;
+      padding: 6px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.95);
+    }
+
+    .reel-column {
+      background: #0a0614;
+      border: 1px solid rgba(122, 0, 255, 0.35);
+      border-radius: 4px;
+      height: 330px; /* 3 列，每列 110px */
+      overflow: hidden;
+      position: relative;
+      box-shadow: inset 0 12px 16px rgba(0,0,0,0.85), inset 0 -12px 16px rgba(0,0,0,0.85);
+    }
+
+    .reel-strip {
+      display: flex;
+      flex-direction: column;
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      transform: translateY(0px);
+      will-change: transform;
+    }
+
+    .slot-cell {
+      height: 110px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      padding: 6px;
+      border-bottom: 1px dashed rgba(122, 0, 255, 0.18);
+    }
+
+    .symbol-card {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .symbol-img {
+      width: 100%;
+      height: 100%;
+      max-width: 100px;
+      max-height: 100px;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.85));
+      border-radius: 6px;
+    }
+
+    /* 圖片載入失敗時的 EVA 占位符方塊 (Fallback Badge) */
+    .symbol-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 4px;
+      border-radius: 6px;
+      border: 2px solid;
+    }
+
+    .symbol-placeholder .sym-tag {
+      font-size: 0.55rem;
+      font-weight: 900;
+      letter-spacing: 1px;
+      padding: 1px 4px;
+      margin-bottom: 2px;
+      text-transform: uppercase;
+    }
+
+    .symbol-placeholder .sym-title {
+      font-size: 0.85rem;
+      font-weight: 900;
+      letter-spacing: 1px;
+    }
+
+    .symbol-placeholder .sym-sub {
+      font-size: 0.6rem;
+      opacity: 0.85;
+      margin-top: 1px;
+    }
+
+    .tier-wild { background: radial-gradient(circle, #380066 0%, #15002b 100%); border-color: var(--eva-green); color: #FFFFFF; }
+    .tier-wild .sym-tag { background: var(--eva-green); color: #000; }
+    .tier-wild .sym-title { color: var(--eva-green); text-shadow: 0 0 6px var(--eva-green); }
+
+    .tier-high1 { background: radial-gradient(circle, #5a0914 0%, #200407 100%); border-color: #ff3344; color: #FFF; }
+    .tier-high1 .sym-tag { background: #ff3344; color: #FFF; }
+    .tier-high1 .sym-title { color: #ff99aa; }
+
+    .tier-high2 { background: radial-gradient(circle, #553e05 0%, #221802 100%); border-color: #ffaa00; color: #FFF; }
+    .tier-high2 .sym-tag { background: #ffaa00; color: #000; }
+    .tier-high2 .sym-title { color: #ffe680; }
+
+    .tier-mid1 { background: radial-gradient(circle, #380812 0%, #170408 100%); border-color: #e60026; color: #FFF; }
+    .tier-mid1 .sym-tag { background: #e60026; color: #FFF; }
+    .tier-mid1 .sym-title { color: #ff6b81; }
+
+    .tier-mid2 { background: radial-gradient(circle, #3b0e3b 0%, #170417 100%); border-color: #b5179e; color: #FFF; }
+    .tier-mid2 .sym-tag { background: #b5179e; color: #FFF; }
+    .tier-mid2 .sym-title { color: #f72585; }
+
+    .tier-low1 { background: radial-gradient(circle, #1a162b 0%, #0d0a18 100%); border-color: #7209b7; color: #FFF; }
+    .tier-low1 .sym-tag { background: #7209b7; color: #FFF; }
+    .tier-low1 .sym-title { color: #d0bfff; }
+
+    .tier-low2 { background: radial-gradient(circle, #05263d 0%, #03131f 100%); border-color: #00b4d8; color: #FFF; }
+    .tier-low2 .sym-tag { background: #00b4d8; color: #000; }
+    .tier-low2 .sym-title { color: #90e0ef; }
+
+    .cell-winning { animation: winGlow 0.75s infinite alternate ease-in-out; z-index: 5; }
+    @keyframes winGlow {
+      0% { box-shadow: 0 0 10px var(--eva-green), inset 0 0 15px var(--eva-green); transform: scale(0.96); }
+      100% { box-shadow: 0 0 25px var(--eva-green), inset 0 0 25px var(--eva-green); transform: scale(1.03); }
+    }
+
+    .cell-berserk-win { animation: berserkGlow 0.35s infinite alternate ease-in-out; z-index: 6; }
+    @keyframes berserkGlow {
+      0% { box-shadow: 0 0 20px #FF003B, inset 0 0 20px #FF003B; border-color: #FF003B !important; }
+      100% { box-shadow: 0 0 35px var(--eva-green), inset 0 0 30px var(--eva-purple); border-color: var(--eva-green) !important; }
+    }
+
+    .payline-svg-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    .payline-path {
+      fill: none;
+      stroke-width: 5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      filter: drop-shadow(0 0 8px currentColor);
+      stroke-dasharray: 10 4;
+      animation: dashMove 1s linear infinite;
+    }
+
+    @keyframes dashMove {
+      to { stroke-dashoffset: -28; }
+    }
+
+    /* ----------------------------------------------------------
+       3.3 機台控制台 (STOP 按鈕 1.jpg, 2.jpg, 3.jpg / 計數器 / SPIN)
+       ---------------------------------------------------------- */
+    .cabinet-console-deck {
+      width: 100%;
+      background: linear-gradient(180deg, #1c0e2b 0%, #0d0417 100%);
+      border-top: 3px solid #5a1c8f;
+      padding: 12px 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 3;
+    }
+
+    /* 3 顆實體機台停止按鈕 (依序為 A B C，僅顯示圖片，自訂調整大小) */
+    .stop-buttons-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 24px;
+      padding: 6px 0 4px;
+    }
+
+    .reel-stop-btn {
+      width: 78px;
+      height: 78px;
+      border-radius: 50%;
+      background: #0d0417;
+      border: 4px solid #6c468a;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      padding: 0;
+      transition: box-shadow 0.65s ease-out, border-color 0.65s ease-out, filter 0.65s ease-out, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.85), inset 0 0 10px rgba(0, 0, 0, 0.8);
+    }
+
+    .reel-stop-btn:active:not(:disabled) {
+      transform: translateY(2px) scale(0.95);
+    }
+
+    .stop-btn-avatar {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+      transition: filter 0.65s ease-out, opacity 0.65s ease-out, transform 0.25s;
+      filter: brightness(0.98) contrast(1.08);
+      opacity: 0.95;
+      background: #100520;
+      display: block;
+    }
+
+    /* 轉動時啟動明亮發光 (Active Ready - 亮燈待命) */
+    .reel-stop-btn.active-ready {
+      cursor: pointer;
+      border-color: #ffffff;
+      transform: scale(1.06);
+    }
+
+    .reel-stop-btn.active-ready .stop-btn-avatar {
+      filter: brightness(1.3) contrast(1.18) saturate(1.15);
+      opacity: 1;
+    }
+
+    /* 按鈕 A 初號機紫綠脈衝光芒 */
+    .btn-unit01.active-ready {
+      border-color: #52ff00;
+      animation: stopBtnPulseA 0.55s infinite alternate ease-in-out;
+    }
+    @keyframes stopBtnPulseA {
+      from { box-shadow: 0 0 12px rgba(82, 255, 0, 0.6), inset 0 0 8px rgba(122, 0, 255, 0.6); }
+      to { box-shadow: 0 0 28px rgba(82, 255, 0, 0.98), 0 0 38px rgba(122, 0, 255, 0.85); }
+    }
+
+    /* 按鈕 B 零號機金黃脈衝光芒 */
+    .btn-unit00.active-ready {
+      border-color: #ffaa00;
+      animation: stopBtnPulseB 0.55s infinite alternate ease-in-out;
+    }
+    @keyframes stopBtnPulseB {
+      from { box-shadow: 0 0 12px rgba(255, 170, 0, 0.6); }
+      to { box-shadow: 0 0 28px rgba(255, 220, 0, 0.98), 0 0 38px rgba(255, 170, 0, 0.85); }
+    }
+
+    /* 按鈕 C 弐號機火紅脈衝光芒 */
+    .btn-unit02.active-ready {
+      border-color: #ff003b;
+      animation: stopBtnPulseC 0.55s infinite alternate ease-in-out;
+    }
+    @keyframes stopBtnPulseC {
+      from { box-shadow: 0 0 12px rgba(255, 0, 59, 0.6); }
+      to { box-shadow: 0 0 28px rgba(255, 34, 85, 0.98), 0 0 38px rgba(255, 0, 59, 0.85); }
+    }
+
+    /* 停止時燈光慢慢熄滅 (Dimmed Off - 平滑漸變暗去) */
+    .reel-stop-btn.dimmed-off {
+      border-color: #382447;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+      animation: none !important;
+      transform: scale(1);
+    }
+
+    .reel-stop-btn.dimmed-off .stop-btn-avatar {
+      filter: brightness(0.38) grayscale(0.5);
+      opacity: 0.38;
+    }
+
+    .reel-stop-btn:disabled {
+      cursor: not-allowed;
+    }
+
+
+
+    .reel-stop-btn:disabled {
+      cursor: not-allowed;
+    }
+
+    /* 7-Segment LED 數據計數器 */
+    .deck-led-counters {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      background: #080310;
+      border: 2px solid #4a1575;
+      border-radius: 6px;
+      padding: 8px 12px;
+    }
+
+    .led-counter-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .led-label {
+      font-size: 0.62rem;
+      font-weight: 800;
+      color: #9d8ec2;
+      letter-spacing: 1px;
+      margin-bottom: 2px;
+    }
+
+    .led-value {
+      font-size: 1.35rem;
+      font-weight: 900;
+      font-family: monospace, var(--font-tech);
+      letter-spacing: 1px;
+    }
+
+    .led-credits { color: var(--eva-green); text-shadow: 0 0 8px rgba(82, 255, 0, 0.7); }
+    .led-bet { color: var(--eva-orange); text-shadow: 0 0 8px rgba(255, 119, 0, 0.7); }
+    .led-win { color: #ffe600; text-shadow: 0 0 8px rgba(255, 230, 0, 0.7); }
+
+    /* 下注切換與 SPIN 啟動槓桿 */
+    .deck-action-controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .bet-buttons-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .bet-btn {
+      background: #140d21;
+      border: 1px solid var(--eva-purple);
+      color: #FFFFFF;
+      font-size: 0.85rem;
+      font-weight: 900;
+      padding: 6px 14px;
+      cursor: pointer;
+      font-family: monospace, var(--font-tech);
+      transition: all 0.2s;
+      border-radius: 4px;
+    }
+
+    .bet-btn:hover:not(:disabled) {
+      border-color: var(--eva-green);
+      color: var(--eva-green);
+    }
+
+    .bet-btn.active {
+      background: var(--eva-purple);
+      border-color: var(--eva-green);
+      color: var(--eva-green);
+      box-shadow: 0 0 10px rgba(82, 255, 0, 0.6);
+    }
+
+    .bet-btn-allin {
+      border-color: var(--eva-red);
+      color: #ff99aa;
+      font-weight: 900;
+    }
+
+    .bet-btn-allin.active {
+      background: linear-gradient(135deg, #FF003B 0%, #b30026 100%);
+      border-color: #FFAA00;
+      color: #FFFFFF;
+      box-shadow: 0 0 16px rgba(255, 0, 59, 0.85);
+      animation: allInGlow 1.2s infinite alternate ease-in-out;
+    }
+
+    @keyframes allInGlow {
+      0% { box-shadow: 0 0 10px rgba(255, 0, 59, 0.6); }
+      100% { box-shadow: 0 0 22px rgba(255, 170, 0, 0.95); }
+    }
+
+    .bet-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* SPIN 啟動按鈕 */
+    .spin-launch-btn {
+      background: linear-gradient(135deg, #FF003B 0%, #990022 100%);
+      border: 2px solid #FFAA00;
+      color: #FFFFFF;
+      font-size: 1.15rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      padding: 8px 22px;
+      cursor: pointer;
+      font-family: inherit;
+      border-radius: 6px;
+      box-shadow: 0 0 18px rgba(255, 0, 59, 0.7);
+      transition: all 0.2s;
+    }
+
+    .spin-launch-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, #FF2255 0%, #b3002b 100%);
+      box-shadow: 0 0 28px rgba(255, 0, 59, 0.95);
+      transform: translateY(-2px);
+    }
+
+    .spin-launch-btn:disabled {
+      background: #2a1018;
+      border-color: #4a2d36;
+      color: #77666d;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    /* ==========================================================
+       4. 暴走影片全螢幕覆蓋層 (BERSERK OVERLAY)
+       ========================================================== */
+    #berserk-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.95);
+      z-index: 9999;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    #berserk-video {
+      width: 100%;
+      height: 100%;
+      max-width: 1200px;
+      max-height: 85vh;
+      object-fit: contain;
+      box-shadow: 0 0 50px rgba(255, 0, 59, 0.8);
+    }
+
+    .berserk-hud {
+      position: absolute;
+      top: 18px;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 24px;
+      pointer-events: none;
+    }
+
+    .berserk-alert-text {
+      background: #FF003B;
+      color: #FFFFFF;
+      font-size: 1.3rem;
+      font-weight: 900;
+      letter-spacing: 3px;
+      padding: 6px 18px;
+      border: 2px solid #FFAA00;
+      animation: alertBlink 0.35s infinite alternate;
+    }
+
+    @keyframes alertBlink {
+      from { opacity: 1; transform: scale(1); }
+      to { opacity: 0.3; transform: scale(1.02); }
+    }
+
+    .berserk-skip-btn {
+      position: absolute;
+      bottom: 24px;
+      right: 28px;
+      background: rgba(0, 0, 0, 0.75);
+      border: 1px solid var(--eva-green);
+      color: var(--eva-green);
+      padding: 8px 16px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      z-index: 10000;
+      letter-spacing: 1px;
+    }
+
+    .berserk-skip-btn:hover {
+      background: var(--eva-green);
+      color: #000;
+    }
+
+    .berserk-fallback-display {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+    }
+
+    .berserk-title-huge {
+      font-size: 3.2rem;
+      font-weight: 900;
+      color: #FF003B;
+      letter-spacing: 6px;
+      text-shadow: 0 0 30px #FF003B, 0 0 60px var(--eva-green);
+      animation: alertBlink 0.25s infinite alternate;
+    }
+
+    /* ==========================================================
+       5. 破產結算彈窗 (Game Over)
+       ========================================================== */
+    #gameover-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(10, 0, 5, 0.95);
+      z-index: 9998;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .gameover-box {
+      max-width: 480px;
+      width: 100%;
+      background: #110408;
+      border: 3px solid var(--eva-red);
+      padding: 28px;
+      text-align: center;
+      box-shadow: 0 0 40px rgba(255, 0, 59, 0.8);
+    }
+
+    .reset-btn {
+      background: var(--eva-purple);
+      border: 2px solid var(--eva-green);
+      color: var(--eva-green);
+      font-size: 1.15rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      padding: 10px 32px;
+      cursor: pointer;
+      margin-top: 18px;
+    }
+
+    .reset-btn:hover {
+      background: var(--eva-green);
+      color: #000;
+    }
+
+    @media (max-width: 520px) {
+      .top-screen-bezel { height: 180px; }
+      .reel-column { height: 280px; }
+      .slot-cell { height: 93px; }
+      .symbol-img { max-width: 82px; max-height: 82px; }
+      .stop-buttons-row { gap: 16px; }
+      .reel-stop-btn { width: 56px; height: 56px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 頂部 NERV 警戒條紋 -->
+  <div class="hazard-stripe top-hazard-bar"></div>
+
+  <!-- 頂部系統 HUD -->
+  <header class="system-hud-bar">
+    <div class="hud-title">
+      <span class="hud-nerv-tag">NERV</span>
+      <span>PACHISLOT // EVANGELION</span>
+    </div>
+    <div class="hud-right">
+      <span class="hud-magi" id="magi-status">MAGI: ALL AGREE</span>
+      <button id="sound-btn" class="sound-btn">🔊 音效: 開</button>
+    </div>
+  </header>
+
+  <!-- ==========================================================
+       實體 EVA 拉霸機台本體 (保留到 SPIN 為止)
+       ========================================================== -->
+  <main class="cabinet-wrapper" id="pachislot-cabinet">
+
+    <!-- 1. 機台頂部：液晶演出螢幕 (播放 OKK 影片，等比例縮小適配) -->
+    <div class="cabinet-top-screen">
+      <div class="top-screen-bezel" id="top-screen-bezel">
+        <video id="top-lcd-video" autoplay loop muted playsinline preload="auto">
+          <source src="OKK.mp4" type="video/mp4">
+          <source src="/OKK.mp4" type="video/mp4">
+          <source src="okk.mp4" type="video/mp4">
+          <source src="/okk.mp4" type="video/mp4">
+          <source src="OKK" type="video/mp4">
+          <source src="/OKK" type="video/mp4">
+          <source src="TOP.mp4" type="video/mp4">
+          <source src="/TOP.mp4" type="video/mp4">
+          <source src="top.mp4" type="video/mp4">
+          <source src="/top.mp4" type="video/mp4">
+          <source src="UP.mp4" type="video/mp4">
+        </video>
+        <div class="top-screen-scanline"></div>
+      </div>
+    </div>
+
+    <!-- 2. 中央核心轉動區域 (REELS WINDOW) -->
+    <div class="reels-stage-housing">
+      <div class="reels-bezel-frame">
+
+        <!-- 3x3 轉輪視窗 -->
+        <div class="reels-viewport" id="reels-viewport">
+          <!-- 輪 1 (左) -->
+          <div class="reel-column" id="reel-col-0">
+            <div class="reel-strip" id="reel-strip-0"></div>
+          </div>
+          <!-- 輪 2 (中) -->
+          <div class="reel-column" id="reel-col-1">
+            <div class="reel-strip" id="reel-strip-1"></div>
+          </div>
+          <!-- 輪 3 (右) -->
+          <div class="reel-column" id="reel-col-2">
+            <div class="reel-strip" id="reel-strip-2"></div>
+          </div>
+
+          <!-- SVG 5 條中獎連線覆蓋圖層 -->
+          <svg class="payline-svg-overlay" id="payline-svg" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 3. 機台控制台 (3顆停止鍵 A B C / LED讀數 / 下注與SPIN) -->
+    <div class="cabinet-console-deck">
+
+      <!-- 3 顆實體機台停止按鈕 (依序分別改成 A B C 顯示圖片就好，自訂調整大小，停輪時燈光慢慢熄滅) -->
+      <div class="stop-buttons-row">
+        <button class="reel-stop-btn btn-unit01" id="stop-btn-0" data-reel="0" disabled title="停止輪 1 [A]">
+          <img src="A.png" alt="A" class="stop-btn-avatar" id="avatar-img-0"
+               onerror="if(!this.dataset.t1){this.dataset.t1='1';this.src='A.jpg';}else if(!this.dataset.t2){this.dataset.t2='1';this.src='public/A.png';}else if(!this.dataset.t3){this.dataset.t3='1';this.src='1.png';}else if(!this.dataset.t4){this.dataset.t4='1';this.src='images/wild.png';}" />
+        </button>
+        <button class="reel-stop-btn btn-unit00" id="stop-btn-1" data-reel="1" disabled title="停止輪 2 [B]">
+          <img src="B.png" alt="B" class="stop-btn-avatar" id="avatar-img-1"
+               onerror="if(!this.dataset.t1){this.dataset.t1='1';this.src='B.jpg';}else if(!this.dataset.t2){this.dataset.t2='1';this.src='public/B.png';}else if(!this.dataset.t3){this.dataset.t3='1';this.src='2.png';}else if(!this.dataset.t4){this.dataset.t4='1';this.src='images/high2.png';}" />
+        </button>
+        <button class="reel-stop-btn btn-unit02" id="stop-btn-2" data-reel="2" disabled title="停止輪 3 [C]">
+          <img src="C.png" alt="C" class="stop-btn-avatar" id="avatar-img-2"
+               onerror="if(!this.dataset.t1){this.dataset.t1='1';this.src='C.jpg';}else if(!this.dataset.t2){this.dataset.t2='1';this.src='public/C.png';}else if(!this.dataset.t3){this.dataset.t3='1';this.src='3.png';}else if(!this.dataset.t4){this.dataset.t4='1';this.src='images/high1.png';}" />
+        </button>
+      </div>
+
+      <!-- 7-Segment LED 數據計數器 -->
+      <div class="deck-led-counters">
+        <div class="led-counter-cell">
+          <div class="led-label">CREDITS (點數)</div>
+          <div class="led-value led-credits" id="credits-display">1000</div>
+        </div>
+        <div class="led-counter-cell">
+          <div class="led-label">BET (下注)</div>
+          <div class="led-value led-bet" id="bet-display">100</div>
+        </div>
+        <div class="led-counter-cell">
+          <div class="led-label">WIN (獲勝)</div>
+          <div class="led-value led-win" id="win-display">0</div>
+        </div>
+      </div>
+
+      <!-- 下注切換與 SPIN 啟動鍵 (保留至此) -->
+      <div class="deck-action-controls">
+        <div class="bet-buttons-group">
+          <button class="bet-btn active" data-bet="100">100</button>
+          <button class="bet-btn" data-bet="200">200</button>
+          <button class="bet-btn" data-bet="500">500</button>
+          <button class="bet-btn bet-btn-allin" data-bet="ALL_IN">ALL IN</button>
+        </div>
+
+        <button id="spin-btn" class="spin-launch-btn">
+          SPIN (LAUNCH)
+        </button>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- 暴走影片全螢幕覆蓋層 -->
+  <div id="berserk-overlay">
+    <div class="hazard-stripe" style="position: absolute; top:0; left:0; width:100%; height:12px;"></div>
+    <div class="hazard-stripe" style="position: absolute; bottom:0; left:0; width:100%; height:12px;"></div>
+
+    <div class="berserk-hud">
+      <div class="berserk-alert-text">EMERGENCY: 初號機暴走</div>
+      <div style="color:var(--eva-green); font-weight:900; font-size:1.1rem; text-shadow:0 0 10px var(--eva-green);">
+        SYNCHRONIZATION: 400%
+      </div>
+    </div>
+
+    <video id="berserk-video" playsinline preload="auto">
+      <source src="berserk.mp4" type="video/mp4">
+      <source src="berserk.mp4.mp4" type="video/mp4">
+    </video>
+
+    <div id="berserk-fallback" class="berserk-fallback-display">
+      <div class="berserk-title-huge">初號機 暴走</div>
+      <div style="font-size: 1.5rem; color: var(--eva-green); letter-spacing: 4px; margin-top: 14px;">
+        BERSERK MODE ACTIVATED
+      </div>
+    </div>
+
+    <button id="berserk-skip-btn" class="berserk-skip-btn">跳過 (SKIP ⏭)</button>
+  </div>
+
+  <!-- 破產結算彈窗 -->
+  <div id="gameover-modal">
+    <div class="gameover-box">
+      <div style="font-size: 2rem; font-weight: 900; color: var(--eva-red); letter-spacing: 4px; margin-bottom: 10px;">
+        補完計畫失敗
+      </div>
+      <div style="font-weight:900; color:var(--eva-orange); letter-spacing:2px; margin-bottom:8px;">
+        GAME OVER // 活動限界到達
+      </div>
+      <div style="font-size:0.95rem; color:#ff99aa; line-height:1.6;">
+        剩餘點數不足以進行下注，請重新注入生命能量。
+      </div>
+      <button id="reset-btn" class="reset-btn">重新開始 (RESET)</button>
+    </div>
+  </div>
+
+
+
+  <!-- ==========================================================
+       核心遊戲邏輯 JAVASCRIPT
+       ========================================================== -->
+  <script>
+    const CONFIG = {
+      INITIAL_CREDITS: 1000,
+      BET_OPTIONS: [100, 200, 500, 'ALL_IN'],
+      DEFAULT_BET: 100,
+
+      PAYOUT_MULTIPLIERS: {
+        wild: 50,
+        high1: 10,
+        high2: 10,
+        mid1: 5,
+        mid2: 5,
+        low1: 2,
+        low2: 2,
+      },
+
+      SPIN_DURATION_BASE: 1400,
+      REEL_STOP_DELAY: 500,
+      BERSERK_VIDEO_PATH: 'berserk.mp4',
+
+      SYMBOL_WEIGHTS: {
+        wild: 10,
+        high1: 16,
+        high2: 16,
+        mid1: 24,
+        mid2: 24,
+        low1: 35,
+        low2: 35,
+      }
+    };
+
+    const SYMBOLS_DATA = {
+      wild: {
+        id: 'wild',
+        name: '初號機 暴走',
+        sub: 'EVA-01 WILD',
+        tier: 'wild',
+        tierName: 'WILD 百搭',
+        imgSrc: 'images/wild.png',
+        altImgSrc: 'images/imageswild.png.png',
+        cssClass: 'tier-wild'
+      },
+      high1: {
+        id: 'high1',
+        name: '明日香',
+        sub: 'EVA-02 HIGH',
+        tier: 'high',
+        tierName: 'HIGH 高階',
+        imgSrc: 'images/high1.png',
+        altImgSrc: 'images/imageshigh1.png.png',
+        cssClass: 'tier-high1'
+      },
+      high2: {
+        id: 'high2',
+        name: '綾波零',
+        sub: 'EVA-00 HIGH',
+        tier: 'high',
+        tierName: 'HIGH 高階',
+        imgSrc: 'images/high2.png',
+        altImgSrc: 'images/imageshigh2.png.png',
+        cssClass: 'tier-high2'
+      },
+      mid1: {
+        id: 'mid1',
+        name: '薩基爾',
+        sub: '第3使徒 MID',
+        tier: 'mid',
+        tierName: 'MID 中階',
+        imgSrc: 'images/mid1.png',
+        altImgSrc: 'images/imagesmid1.png.png',
+        cssClass: 'tier-mid1'
+      },
+      mid2: {
+        id: 'mid2',
+        name: 'NERV',
+        sub: '特務機關 MID',
+        tier: 'mid',
+        tierName: 'MID 中階',
+        imgSrc: 'images/mid2.png',
+        altImgSrc: 'images/imagesmid2.png.png',
+        cssClass: 'tier-mid2'
+      },
+      low1: {
+        id: 'low1',
+        name: '西瓜',
+        sub: '加持的西瓜 LOW',
+        tier: 'low',
+        tierName: 'LOW 低階',
+        imgSrc: 'images/low1.png',
+        altImgSrc: 'images/imageslow1.png.png',
+        cssClass: 'tier-low1'
+      },
+      low2: {
+        id: 'low2',
+        name: '片片',
+        sub: 'PEN PEN LOW',
+        tier: 'low',
+        tierName: 'LOW 低階',
+        imgSrc: 'images/low2.png',
+        altImgSrc: 'images/imageslow2.png.png',
+        cssClass: 'tier-low2'
+      }
+    };
+
+    const PAYLINES = [
+      { id: 1, name: '線 1 (上橫線)', color: '#52FF00', coords: [[0, 0], [1, 0], [2, 0]] },
+      { id: 2, name: '線 2 (中橫線)', color: '#FFDE00', coords: [[0, 1], [1, 1], [2, 1]] },
+      { id: 3, name: '線 3 (下橫線)', color: '#FF3366', coords: [[0, 2], [1, 2], [2, 2]] },
+      { id: 4, name: '線 4 (左上至右下)', color: '#00d2ff', coords: [[0, 0], [1, 1], [2, 2]] },
+      { id: 5, name: '線 5 (左下至右上)', color: '#b5179e', coords: [[0, 2], [1, 1], [2, 0]] }
+    ];
+
+    let gameState = {
+      credits: CONFIG.INITIAL_CREDITS,
+      selectedBet: CONFIG.DEFAULT_BET,
+      isAllIn: false,
+      currentBet: CONFIG.DEFAULT_BET,
+      lastWin: 0,
+      isSpinning: false,
+      isBerserkActive: false,
+      hasTriggered3000Berserk: false,
+      soundEnabled: true,
+      grid: [
+        ['wild', 'high1', 'mid1'],
+        ['high2', 'wild', 'low1'],
+        ['mid2', 'low2', 'wild']
+      ]
+    };
+
+    function getEffectiveBet() {
+      if (gameState.isAllIn) {
+        return Math.max(0, gameState.credits);
+      }
+      return gameState.selectedBet;
+    }
+
+    class EvaAudioSystem {
+      constructor() {
+        this.ctx = null;
+        this.spinInterval = null;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) {
+            this.ctx = new AudioContext();
+          }
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      playSpinTick() {
+        if (!gameState.soundEnabled || !this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(360, this.ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(120, this.ctx.currentTime + 0.045);
+          gain.gain.setValueAtTime(0.09, this.ctx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.045);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.045);
+        } catch(e) {}
+      }
+
+      // 1. 轉動時連續機械轉輪滾動音效
+      startSpinningSound() {
+        if (!gameState.soundEnabled || !this.ctx) return;
+        this.stopSpinningSound();
+        this.playSpinTick();
+        this.spinInterval = setInterval(() => {
+          if (!gameState.isSpinning) {
+            this.stopSpinningSound();
+            return;
+          }
+          this.playSpinTick();
+        }, 75);
+      }
+
+      stopSpinningSound() {
+        if (this.spinInterval) {
+          clearInterval(this.spinInterval);
+          this.spinInterval = null;
+        }
+      }
+
+      playReelStop() {
+        if (!gameState.soundEnabled || !this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(220, this.ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.12);
+          gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.12);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.12);
+        } catch(e) {}
+      }
+
+      playWinChime() {
+        if (!gameState.soundEnabled || !this.ctx) return;
+        try {
+          const notes = [523.25, 659.25, 783.99, 1046.50];
+          notes.forEach((freq, idx) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.08);
+            gain.gain.setValueAtTime(0.15, this.ctx.currentTime + idx * 0.08);
+            gain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + idx * 0.08 + 0.35);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(this.ctx.currentTime + idx * 0.08);
+            osc.stop(this.ctx.currentTime + idx * 0.08 + 0.35);
+          });
+        } catch(e) {}
+      }
+
+      playEmergencyAlarm() {
+        if (!gameState.soundEnabled || !this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sawtooth';
+          const now = this.ctx.currentTime;
+          osc.frequency.setValueAtTime(600, now);
+          osc.frequency.linearRampToValueAtTime(900, now + 0.5);
+          osc.frequency.linearRampToValueAtTime(600, now + 1.0);
+          osc.frequency.linearRampToValueAtTime(900, now + 1.5);
+          gain.gain.setValueAtTime(0.25, now);
+          gain.gain.linearRampToValueAtTime(0.001, now + 2.0);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 2.0);
+        } catch(e) {}
+      }
+    }
+
+    const soundSystem = new EvaAudioSystem();
+
+    const DOM = {
+      creditsDisplay: document.getElementById('credits-display'),
+      betDisplay: document.getElementById('bet-display'),
+      winDisplay: document.getElementById('win-display'),
+      spinBtn: document.getElementById('spin-btn'),
+      betButtons: document.querySelectorAll('.bet-btn'),
+      soundBtn: document.getElementById('sound-btn'),
+      magiStatus: document.getElementById('magi-status'),
+      reelsViewport: document.getElementById('reels-viewport'),
+      paylineSvg: document.getElementById('payline-svg'),
+      reelStrips: [
+        document.getElementById('reel-strip-0'),
+        document.getElementById('reel-strip-1'),
+        document.getElementById('reel-strip-2')
+      ],
+      stopButtons: [
+        document.getElementById('stop-btn-0'),
+        document.getElementById('stop-btn-1'),
+        document.getElementById('stop-btn-2')
+      ],
+      berserkOverlay: document.getElementById('berserk-overlay'),
+      berserkVideo: document.getElementById('berserk-video'),
+      berserkFallback: document.getElementById('berserk-fallback'),
+      berserkSkipBtn: document.getElementById('berserk-skip-btn'),
+      gameoverModal: document.getElementById('gameover-modal'),
+      resetBtn: document.getElementById('reset-btn')
+    };
+
+    function createSymbolCardHTML(symKey) {
+      const data = SYMBOLS_DATA[symKey] || SYMBOLS_DATA.wild;
+      return `
+        <div class="slot-cell" data-symbol="${data.id}">
+          <div class="symbol-card">
+            <img class="symbol-img" 
+                 src="${data.imgSrc}" 
+                 alt="${data.name}" 
+                 onerror="if(!this.dataset.triedAlt){ this.dataset.triedAlt='1'; this.src='${data.altImgSrc}'; } else { this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex'; }"
+                 onload="this.style.display='block'; if(this.nextElementSibling) this.nextElementSibling.style.display='none';" />
+            
+            <div class="symbol-placeholder ${data.cssClass}">
+              <div class="sym-tag">${data.tierName}</div>
+              <div class="sym-title">${data.name}</div>
+              <div class="sym-sub">${data.sub}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function getRandomSymbol() {
+      const keys = Object.keys(CONFIG.SYMBOL_WEIGHTS);
+      const totalWeight = keys.reduce((sum, key) => sum + CONFIG.SYMBOL_WEIGHTS[key], 0);
+      let rand = Math.random() * totalWeight;
+      for (const key of keys) {
+        if (rand < CONFIG.SYMBOL_WEIGHTS[key]) {
+          return key;
+        }
+        rand -= CONFIG.SYMBOL_WEIGHTS[key];
+      }
+      return 'wild';
+    }
+
+    function initializeReels() {
+      for (let c = 0; c < 3; c++) {
+        const strip = DOM.reelStrips[c];
+        strip.innerHTML = '';
+        for (let r = 0; r < 3; r++) {
+          const sym = gameState.grid[c][r];
+          strip.insertAdjacentHTML('beforeend', createSymbolCardHTML(sym));
+        }
+        strip.style.transform = 'translateY(0px)';
+      }
+    }
+
+    function updateUI() {
+      DOM.creditsDisplay.textContent = gameState.credits;
+
+      const effectiveBet = getEffectiveBet();
+      gameState.currentBet = effectiveBet;
+
+      if (gameState.isAllIn) {
+        DOM.betDisplay.innerHTML = `<span style="color:var(--eva-red); font-size:1.05rem; font-weight:900;">ALL IN (${gameState.credits})</span>`;
+      } else {
+        DOM.betDisplay.textContent = gameState.selectedBet;
+      }
+
+      DOM.winDisplay.textContent = gameState.lastWin;
+
+      DOM.betButtons.forEach(btn => {
+        const betVal = btn.dataset.bet;
+        if (gameState.isAllIn && betVal === 'ALL_IN') {
+          btn.classList.add('active');
+        } else if (!gameState.isAllIn && parseInt(betVal, 10) === gameState.selectedBet) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+
+      checkBankruptcy();
+    }
+
+    function checkBankruptcy() {
+      if (gameState.isSpinning) return;
+      if (gameState.credits <= 0) {
+        DOM.gameoverModal.style.display = 'flex';
+        return;
+      }
+      if (!gameState.isAllIn && gameState.credits < gameState.selectedBet) {
+        if (gameState.credits < 100) {
+          DOM.magiStatus.textContent = 'WARNING: 點數不足，請選 ALL IN！';
+          DOM.magiStatus.style.color = 'var(--eva-red)';
+        }
+      }
+    }
+
+    function evaluateResults(finalGrid) {
+      const winningLines = [];
+      let hasWildBerserk = false;
+
+      PAYLINES.forEach(line => {
+        const s0 = finalGrid[line.coords[0][0]][line.coords[0][1]];
+        const s1 = finalGrid[line.coords[1][0]][line.coords[1][1]];
+        const s2 = finalGrid[line.coords[2][0]][line.coords[2][1]];
+        const lineSymbols = [s0, s1, s2];
+
+        const nonWilds = lineSymbols.filter(s => s !== 'wild');
+
+        let matchedSymbol = null;
+        let isWin = false;
+
+        if (nonWilds.length === 0) {
+          isWin = true;
+          matchedSymbol = 'wild';
+          hasWildBerserk = true;
+        } else {
+          const firstNonWild = nonWilds[0];
+          const allSame = nonWilds.every(s => s === firstNonWild);
+          if (allSame) {
+            isWin = true;
+            matchedSymbol = firstNonWild;
+          }
+        }
+
+        if (isWin) {
+          const mult = CONFIG.PAYOUT_MULTIPLIERS[matchedSymbol] || 0;
+          const linePayout = gameState.currentBet * mult;
+          winningLines.push({
+            lineInfo: line,
+            matchedSymbol,
+            multiplier: mult,
+            payout: linePayout,
+            isWildTrio: (matchedSymbol === 'wild')
+          });
+        }
+      });
+
+      return { winningLines, hasWildBerserk };
+    }
+
+    function clearPaylineVisuals() {
+      DOM.paylineSvg.innerHTML = '';
+      document.querySelectorAll('.slot-cell').forEach(cell => {
+        cell.classList.remove('cell-winning', 'cell-berserk-win');
+      });
+    }
+
+    function drawWinningLines(winningLines, hasWildBerserk) {
+      clearPaylineVisuals();
+      if (!winningLines || winningLines.length === 0) return;
+
+      const viewportRect = DOM.reelsViewport.getBoundingClientRect();
+      const svgW = viewportRect.width;
+      const svgH = viewportRect.height;
+      DOM.paylineSvg.setAttribute('viewBox', `0 0 ${svgW} ${svgH}`);
+
+      winningLines.forEach(win => {
+        const coords = win.lineInfo.coords;
+        const points = [];
+
+        coords.forEach(([colIdx, rowIdx]) => {
+          const reelStrip = DOM.reelStrips[colIdx];
+          const cells = reelStrip.querySelectorAll('.slot-cell');
+          const targetCell = cells[cells.length - 3 + rowIdx];
+
+          if (targetCell) {
+            if (win.isWildTrio) {
+              targetCell.classList.add('cell-berserk-win');
+            } else {
+              targetCell.classList.add('cell-winning');
+            }
+
+            const cellRect = targetCell.getBoundingClientRect();
+            const cx = (cellRect.left + cellRect.width / 2) - viewportRect.left;
+            const cy = (cellRect.top + cellRect.height / 2) - viewportRect.top;
+            points.push(`${cx},${cy}`);
+          }
+        });
+
+        if (points.length === 3) {
+          const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+          polyline.setAttribute('points', points.join(' '));
+          polyline.setAttribute('class', 'payline-path');
+          polyline.style.stroke = win.lineInfo.color;
+          DOM.paylineSvg.appendChild(polyline);
+        }
+      });
+    }
+
+    function triggerBerserkSequence(onComplete) {
+      gameState.isBerserkActive = true;
+      DOM.berserkOverlay.style.display = 'flex';
+      soundSystem.playEmergencyAlarm();
+
+      let videoFinished = false;
+      let fallbackTimer = null;
+
+      const cleanUpAndFinish = () => {
+        if (videoFinished) return;
+        videoFinished = true;
+        if (fallbackTimer) clearTimeout(fallbackTimer);
+
+        DOM.berserkVideo.pause();
+        DOM.berserkVideo.onended = null;
+        DOM.berserkVideo.onerror = null;
+        DOM.berserkOverlay.style.display = 'none';
+        DOM.berserkFallback.style.display = 'none';
+        DOM.berserkVideo.style.display = 'block';
+        gameState.isBerserkActive = false;
+
+        if (typeof onComplete === 'function') {
+          onComplete();
+        }
+      };
+
+      DOM.berserkVideo.onended = cleanUpAndFinish;
+      DOM.berserkSkipBtn.onclick = cleanUpAndFinish;
+
+      DOM.berserkVideo.muted = false;
+      DOM.berserkVideo.currentTime = 0;
+      DOM.berserkVideo.load();
+
+      const playPromise = DOM.berserkVideo.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(err => {
+          console.warn('影片播放限制或檔案讀取問題，切換至暴走備用演出:', err);
+          DOM.berserkVideo.style.display = 'none';
+          DOM.berserkFallback.style.display = 'flex';
+          fallbackTimer = setTimeout(cleanUpAndFinish, 3500);
+        });
+      }
+
+      DOM.berserkVideo.onerror = () => {
+        DOM.berserkVideo.style.display = 'none';
+        DOM.berserkFallback.style.display = 'flex';
+        fallbackTimer = setTimeout(cleanUpAndFinish, 3500);
+      };
+    }
+
+    function spinReels() {
+      if (gameState.isSpinning) return;
+
+      const wagerAmount = getEffectiveBet();
+      if (wagerAmount <= 0) {
+        checkBankruptcy();
+        return;
+      }
+
+      if (gameState.credits < wagerAmount) {
+        if (gameState.credits > 0) {
+          gameState.isAllIn = true;
+          updateUI();
+        } else {
+          checkBankruptcy();
+          return;
+        }
+      }
+
+      const finalWager = getEffectiveBet();
+      if (finalWager <= 0) {
+        checkBankruptcy();
+        return;
+      }
+
+      soundSystem.init();
+
+      gameState.isSpinning = true;
+      gameState.currentBet = finalWager;
+      gameState.credits -= finalWager;
+      gameState.lastWin = 0;
+      updateUI();
+      clearPaylineVisuals();
+
+      // 1. 播放連續轉動音效
+      soundSystem.startSpinningSound();
+
+      DOM.spinBtn.disabled = true;
+      DOM.betButtons.forEach(btn => btn.disabled = true);
+      
+      // 4. 三顆停止按鈕亮起待命燈光
+      DOM.stopButtons.forEach(btn => {
+        btn.disabled = false;
+        btn.classList.remove('dimmed-off');
+        btn.classList.add('active-ready');
+      });
+
+      DOM.magiStatus.textContent = 'MAGI: SPINNING...';
+      DOM.magiStatus.style.color = '#FFAA00';
+
+      const targetGrid = [
+        [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()],
+        [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()],
+        [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()]
+      ];
+
+      const cellHeight = 110;
+      const reelConfigs = [];
+
+      for (let c = 0; c < 3; c++) {
+        const strip = DOM.reelStrips[c];
+        const oldSymbols = gameState.grid[c];
+        const finalSymbols = targetGrid[c];
+
+        const rollCount = 20 + c * 10;
+        const allSymbols = [...oldSymbols];
+        for (let i = 0; i < rollCount; i++) {
+          allSymbols.push(getRandomSymbol());
+        }
+        allSymbols.push(...finalSymbols);
+
+        strip.innerHTML = '';
+        allSymbols.forEach(sym => {
+          strip.insertAdjacentHTML('beforeend', createSymbolCardHTML(sym));
+        });
+
+        strip.style.transition = 'none';
+        strip.style.transform = 'translateY(0px)';
+        void strip.offsetHeight;
+
+        const finalY = -(allSymbols.length - 3) * cellHeight;
+        const stopTimeMs = CONFIG.SPIN_DURATION_BASE + c * CONFIG.REEL_STOP_DELAY;
+
+        reelConfigs.push({
+          colIdx: c,
+          strip,
+          finalY,
+          stopTimeMs,
+          allSymbols
+        });
+      }
+
+      reelConfigs.forEach(cfg => {
+        setTimeout(() => {
+          cfg.strip.style.transition = `transform ${cfg.stopTimeMs}ms cubic-bezier(0.18, 0.9, 0.32, 1.25)`;
+          cfg.strip.style.transform = `translateY(${cfg.finalY}px)`;
+        }, 30);
+
+        // 依序停輪，燈光慢慢熄滅
+        setTimeout(() => {
+          soundSystem.playReelStop();
+          DOM.stopButtons[cfg.colIdx].disabled = true;
+          DOM.stopButtons[cfg.colIdx].classList.remove('active-ready');
+          DOM.stopButtons[cfg.colIdx].classList.add('dimmed-off');
+        }, cfg.stopTimeMs);
+      });
+
+      const totalSpinTime = CONFIG.SPIN_DURATION_BASE + 2 * CONFIG.REEL_STOP_DELAY + 200;
+
+      setTimeout(() => {
+        // 停止轉動音效
+        soundSystem.stopSpinningSound();
+
+        gameState.grid = targetGrid;
+        const { winningLines, hasWildBerserk } = evaluateResults(targetGrid);
+
+        let totalWin = 0;
+        winningLines.forEach(w => {
+          totalWin += w.payout;
+        });
+
+        // 5. 檢查點數是否達到 3000 里程碑或 3 Wild 暴走
+        const willReach3000 = ((gameState.credits + totalWin) >= 3000 && !gameState.hasTriggered3000Berserk);
+
+        if (hasWildBerserk || willReach3000) {
+          if (willReach3000) {
+            gameState.hasTriggered3000Berserk = true;
+            DOM.magiStatus.textContent = 'MAGI: 3000 CREDITS REACHED! BERSERK MODE!';
+          } else {
+            DOM.magiStatus.textContent = 'MAGI: BERSERK DETECTED!';
+          }
+          DOM.magiStatus.style.color = '#FF003B';
+
+          triggerBerserkSequence(() => {
+            applyWinningPayout(totalWin, winningLines, true);
+          });
+        } else {
+          applyWinningPayout(totalWin, winningLines, false);
+        }
+
+      }, totalSpinTime);
+    }
+
+    function applyWinningPayout(totalWin, winningLines, isBerserk) {
+      gameState.lastWin = totalWin;
+      gameState.credits += totalWin;
+
+      if (totalWin > 0) {
+        soundSystem.playWinChime();
+        DOM.winDisplay.classList.add('win-pulse');
+        setTimeout(() => DOM.winDisplay.classList.remove('win-pulse'), 600);
+
+        drawWinningLines(winningLines, isBerserk);
+
+        DOM.magiStatus.textContent = isBerserk 
+          ? 'SYNCHRO 400%: BERSERK JACKPOT!' 
+          : `WIN: +${totalWin} CREDITS!`;
+        DOM.magiStatus.style.color = 'var(--eva-green)';
+      } else {
+        DOM.magiStatus.textContent = 'MAGI: NO MATCH';
+        DOM.magiStatus.style.color = '#9d8ec2';
+      }
+
+      updateUI();
+      gameState.isSpinning = false;
+      DOM.spinBtn.disabled = false;
+      DOM.betButtons.forEach(btn => btn.disabled = false);
+      DOM.stopButtons.forEach(btn => {
+        btn.disabled = true;
+        btn.classList.remove('active-ready');
+        btn.classList.add('dimmed-off');
+      });
+
+      checkBankruptcy();
+    }
+
+    function setupEventListeners() {
+      DOM.spinBtn.addEventListener('click', () => {
+        spinReels();
+      });
+
+      window.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' && !gameState.isSpinning && !gameState.isBerserkActive) {
+          e.preventDefault();
+          spinReels();
+        }
+      });
+
+      DOM.betButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (gameState.isSpinning) return;
+          const val = btn.dataset.bet;
+          if (val === 'ALL_IN') {
+            gameState.isAllIn = true;
+          } else {
+            gameState.isAllIn = false;
+            gameState.selectedBet = parseInt(val, 10);
+          }
+          updateUI();
+        });
+      });
+
+      DOM.soundBtn.addEventListener('click', () => {
+        soundSystem.init();
+        gameState.soundEnabled = !gameState.soundEnabled;
+        DOM.soundBtn.textContent = gameState.soundEnabled ? '🔊 音效: 開' : '🔇 音效: 關';
+      });
+
+      DOM.resetBtn.addEventListener('click', () => {
+        gameState.credits = CONFIG.INITIAL_CREDITS;
+        gameState.selectedBet = CONFIG.DEFAULT_BET;
+        gameState.isAllIn = false;
+        gameState.hasTriggered3000Berserk = false;
+        gameState.lastWin = 0;
+        DOM.gameoverModal.style.display = 'none';
+        updateUI();
+        clearPaylineVisuals();
+      });
+    }
+
+    // ----------------------------------------------------------
+    // 頂部液晶演出螢幕 (OKK 影片) 適配與等比例縮放邏輯
+    // ----------------------------------------------------------
+    let videoRotationAngle = 0; // 0, 90, 180, 270
+
+    function applyVideoOrientation() {
+      const topVideo = document.getElementById('top-lcd-video');
+      const bezel = document.getElementById('top-screen-bezel');
+      if (!topVideo) return;
+
+      if (videoRotationAngle === 90 || videoRotationAngle === 270) {
+        // 直向轉橫向：旋轉並等比例縮小以完整適配螢幕框不裁切
+        const bw = bezel ? (bezel.clientWidth || 480) : 480;
+        const bh = bezel ? (bezel.clientHeight || 230) : 230;
+        const scale = (Math.min(bw, bh) / Math.max(bw, bh)).toFixed(2);
+        topVideo.style.transform = `rotate(${videoRotationAngle}deg) scale(${scale})`;
+      } else if (videoRotationAngle === 180) {
+        topVideo.style.transform = 'rotate(180deg)';
+      } else {
+        topVideo.style.transform = 'none';
+      }
+    }
+
+    function initTopLcdVideo() {
+      const topVideo = document.getElementById('top-lcd-video');
+      if (!topVideo) return;
+
+      topVideo.muted = true;
+      topVideo.defaultMuted = true;
+      topVideo.playsInline = true;
+
+      const playVideo = () => {
+        const promise = topVideo.play();
+        if (promise !== undefined) {
+          promise.catch(err => {
+            console.log('Top video autoplay deferred until user interaction:', err);
+          });
+        }
+      };
+
+      playVideo();
+
+      // 當偵測到影片來源為直向格式 (videoHeight > videoWidth)，自動轉為橫向 (90度)
+      topVideo.addEventListener('loadedmetadata', () => {
+        if (topVideo.videoHeight > topVideo.videoWidth) {
+          videoRotationAngle = 90;
+          applyVideoOrientation();
+        } else {
+          videoRotationAngle = 0;
+          applyVideoOrientation();
+        }
+      });
+
+      // 確保使用者一有觸控或點擊互動即刻啟動播放
+      ['click', 'touchstart', 'pointerdown', 'keydown'].forEach(evt => {
+        window.addEventListener(evt, playVideo, { once: true, passive: true });
+      });
+
+      topVideo.addEventListener('error', () => {
+        console.warn('top-lcd-video fallback OKK.mp4 / TOP.mp4');
+        if (!topVideo.currentSrc || !topVideo.currentSrc.includes('OKK.mp4')) {
+          topVideo.src = 'OKK.mp4';
+          topVideo.load();
+          playVideo();
+        }
+      });
+    }
+
+    // ----------------------------------------------------------
+    // 停止按鈕手動停輪互動支援
+    // ----------------------------------------------------------
+    function setupStopButtonsManualControl() {
+      DOM.stopButtons.forEach((btn, idx) => {
+        btn.addEventListener('click', () => {
+          if (!gameState.isSpinning || btn.disabled) return;
+          soundSystem.playReelStop();
+          btn.disabled = true;
+          btn.classList.remove('active-ready');
+          btn.classList.add('dimmed-off');
+        });
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initializeReels();
+      updateUI();
+      setupEventListeners();
+      initTopLcdVideo();
+      setupStopButtonsManualControl();
+    });
+  </script>
+</body>
+</html>
